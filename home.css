@@ -5,8 +5,9 @@
     font-family: Arial, sans-serif;
 }
 body{
-   background-color: #0a0f30;
+   background: linear-gradient(to right,#020024, #090979, #00d4ff);
    color: white;
+
 }
 .navbar{
     display: flex;
@@ -54,13 +55,15 @@ body{
 
 }
 .auth .Signup{
-   background-color: #5FA8F2;
+   background-color: #78C2FF;
    padding: 0.6em 1.4em;
    border-radius:25px ;
    color: black;
    font-weight: bold;
    text-decoration: none;
    transition: 0.3s ease;
+  
+
 }
 .auth .Signup :hover{
     background-color: #3A80D9;
@@ -68,26 +71,34 @@ body{
 }
 .auth .login :hover{
     color: #5FA8F2;
+  
 }
 .hero{
     display: flex;
     align-items: center;
     text-align: center;
-    height: 60vh;
-    padding: 5% 11%;
-   
+    height: 100vh;
+    padding: 5% 11%; 
+    background-image: url('39a568908f6f4a90d80ee9e7160fba63.jpeg');
+   background-size: cover;
+   background-position: center;
+   background-repeat: no-repeat;
+
+}
+.hero img{
+    margin-top: 50px;
 }
 .hero-cont h1{
    font-size:4vw ;
-   max-width: 80%;
    white-space: nowrap;
-   font-family: 'Inria serif', sans-serif;
-  
-  
+   font-family: 'Hahmlet',serif;
+   font-weight: 200;
+   margin-right:70%;
 }
 .hero-cont span{
     color: #6BBAFF;
-    font-family: 'Inria serif', sans-serif;
+    font-family: 'Hahmlet',serif;
+    font-weight: 400;
 }
 .btn{
     display: inline-block;
@@ -99,10 +110,81 @@ body{
     text-decoration: none;
     border-radius: 25px;
     font-weight: bold;
-    margin-right:60% ;
     font-family: 'Inria serif', sans-serif;
     white-space: nowrap;
+    margin-right: 70%;
 }
 
 
+section {
+    padding:10%;
+    text-align: center;
+   
+}
+#Services{
+    background-color: white;
+}
+#Services h2{
+    color: #78C2FF;
+    font-size: 350%;
+    font-family: 'Hind Siliguri';
+    letter-spacing: 25px;
+   
+}
+
+.services-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 5%;
+ 
+}
+
+.service-item {
+    width: 20%;
+    margin: 5%;
+    padding: 3%;
+    background-color: #f9f9f9;
+    border: 50% solid #ddd;
+    border-radius: 20%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 1);
+    text-align: center;
+    transition: all 0.3s ease;
+    color: black;
+   
+}
+
+
+.service-item img {
+    width: 50%;
+    margin-bottom: 10%;
+    
+}
+
+.service-item p {
+    margin-top: 10%;
+    font-size: 124%;
+    font-family: 'Inria Sans',sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 12px) {
+    .service-item {
+        width: 30%;
+        margin: 2%;
+    }
+}
+
+@media( max-width:768px){
+    .service-item{
+       width: 30%;
+        margin: 5% 0
+    }
+}
+@media (max-width: 480px) {
+    .service-item {
+        width: 100%;
+        padding: 15px;
+    }
+}
 
