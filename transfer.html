@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking App Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f7;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+        }
+        /* Sidebar */
+        
+        .sidebar {
+            width: 80px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-right: 20px;
+            height: calc(100vh - 40px);
+        }
+        
+        .sidebar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-item.active {
+            color: #0078d7;
+            font-weight: bold;
+        }
+        
+        .sidebar-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-item:last-child {
+            margin-top: auto;
+        }
+        /* Main content */
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        /* Header */
+        
+        .header {
+            background-color: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .app-title {
+            color: #56ccf2;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background-color: #eee;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+        
+        .user-details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .search-box {
+            width: 200px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-icon {
+            color: #56ccf2;
+            margin-right: 5px;
+        }
+        /* Main layout */
+        
+        .top-row,
+        .bottom-row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        /* Top row cards */
+        
+        .transfer-card {
+            width: 370px;
+            padding: 20px;
+        }
+        
+        .bills-card {
+            flex: 1;
+            padding: 20px;
+        }
+        /* Bottom row cards */
+        
+        .history-card {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .promo-card {
+            width: 350px;
+            height: 200px;
+            background: linear-gradient(to right, #3f6ad8, #5982e5);
+            color: white;
+            display: flex;
+            padding: 0;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .see-more {
+            font-size: 12px;
+            color: #56ccf2;
+            text-decoration: none;
+        }
+        /* Transfer form */
+        
+        .transfer-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .form-label {
+            font-size: 12px;
+            color: #56ccf2;
+        }
+        
+        .card-select {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .card-number {
+            color: #999;
+        }
+        
+        .dropdown-icon {
+            color: #56ccf2;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            border: none;
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .btn-transfer {
+            background-color: #3f6ad8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            align-self: flex-end;
+            margin-top: 10px;
+        }
+        /* Category grid */
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .category-icon {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        /* History table */
+        
+        .history-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .tab.active {
+            color: #3f6ad8;
+            border-bottom: 2px solid #3f6ad8;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .history-table th {
+            text-align: left;
+            padding: 10px;
+            color: #999;
+            font-weight: normal;
+        }
+        
+        .history-table td {
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .status-success {
+            color: #27ae60;
+        }
+        
+        .status-cancelled {
+            color: #e74c3c;
+        }
+        /* Promo card */
+        
+        .promo-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .promo-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .promo-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .promo-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-learn {
+            font-size: 11px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .btn-order {
+            font-size: 11px;
+            background-color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            color: #3f6ad8;
+            cursor: pointer;
+        }
+        
+        .promo-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .credit-card {
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(to right, #2c3e50, #3498db);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            padding: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-chip {
+            width: 24px;
+            height: 18px;
+            background-color: #f1c40f;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .card-number-display {
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 6px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-item">
+            <a href="home.html" class="sidebar-item">
+                <div class="sidebar-icon">🏠</div>
+                Home</a>
+        </div>
+        <div class="sidebar-item active">
+            <div class="sidebar-icon">↔️</div>
+            Transfers
+        </div>
+        <div class="sidebar-item">
+            <div class="sidebar-icon">👤</div>
+            Profile
+        </div>
+        <div class="sidebar-item">
+            <div class="sidebar-icon">🚪</div>
+            Log out
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">Transfers</div>
+            <div class="user-info">
+                <div class="user-avatar">👤</div>
+                <div class="user-details">
+                    <div class="user-name">Stuart</div>
+                    <div class="user-email">stuart@example.com</div>
+                </div>
+            </div>
+            <div class="search-box">
+                <div class="search-icon">🔍</div>
+                Search
+            </div>
+        </div>
+
+        <!-- Top row -->
+        <div class="top-row">
+            <!-- Transfer card -->
+            <div class="card transfer-card">
+                <div class="card-title">Transfer</div>
+                <div class="transfer-form">
+                    <div class="form-group">
+                        <div class="form-label">From card</div>
+                        <div class="card-select">
+                            <div>
+                                <div class="card-number">0000 0000 0000 0000</div>
+                            </div>
+                            <div class="dropdown-icon">▼</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-label">To card</div>
+                        <div class="card-select">
+                            <div>
+                                <div class="card-number">0000 0000 0000 0000</div>
+                            </div>
+                            <div class="dropdown-icon">▼</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-label">Purpose</div>
+                        <input type="text" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <div class="form-label">Amount</div>
+                        <input type="text" class="form-input">
+                    </div>
+                    <button class="btn-transfer">Transfer</button>
+                </div>
+            </div>
+
+            <!-- Paying bills section -->
+            <div class="card bills-card">
+                <div class="card-title">Paying Bills</div>
+                <div class="category-grid">
+                    <div class="category-item">
+                        <div class="category-icon">📱</div>
+                        Mobile
+                    </div>
+                    <div class="category-item">
+                        <div class="category-icon">🌐</div>
+                        Internet
+                    </div>
+                    <div class="category-item">
+                        <div class="category-icon">📺</div>
+                        TV
+                    </div>
+                    <div class="category-item">
+                        <div class="category-icon">☎️</div>
+                        Fixed Phone
+                    </div>
+                    <div class="category-item">
+                        <div class="category-icon">🔥</div>
+                        Gas
+                    </div>
+                    <div class="category-item">
+                        <div class="category-icon">💧</div>
+                        Water
+                    </div>
+                    <div class="category-item">
+                        <div class="category-icon">🚗</div>
+                        Transport
+                    </div>
+                    <div class="category-item">
+                        <div class="category-icon">⋯</div>
+                        Other
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom row -->
+        <div class="bottom-row">
+            <!-- History card -->
+            <div class="card history-card">
+                <div class="card-title">
+                    History
+                    <a href="#" class="see-more">See more</a>
+                </div>
+                <div class="history-tabs">
+                    <div class="tab">From</div>
+                    <div class="tab">To</div>
+                    <div class="tab active">All</div>
+                    <div class="tab">In</div>
+                    <div class="tab">Out</div>
+                    <div class="tab">Bills</div>
+                </div>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Netflix</td>
+                            <td>7.7.2025</td>
+                            <td class="status-success">Successfully</td>
+                            <td>€24.99</td>
+                        </tr>
+                        <tr>
+                            <td>Airbnb</td>
+                            <td>13.7.2025</td>
+                            <td class="status-success">Successfully</td>
+                            <td>€680.10</td>
+                        </tr>
+                        <tr>
+                            <td>Spotify</td>
+                            <td>3.8.2025</td>
+                            <td class="status-cancelled">Cancelled</td>
+                            <td>€102.20</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Promo card -->
+            <div class="card promo-card">
+                <div class="promo-content">
+                    <div class="promo-label">NEW</div>
+                    <div class="promo-title">Order your<br>Card Now !</div>
+                    <div class="promo-actions">
+                        <button class="btn-learn">Learn more</button>
+                        <button class="btn-order">Order Now</button>
+                    </div>
+                </div>
+                <div class="promo-image">
+                    <div class="credit-card">
+                        <div class="card-chip"></div>
+                        <div class="card-number-display">4242 5252 6262 6789</div>
+                        <div class="card-details">
+                            <div>NAME SURNAME</div>
+                            <div>05/29</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
