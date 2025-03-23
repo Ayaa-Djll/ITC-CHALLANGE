@@ -31,6 +31,72 @@ const generateToken = (userId, isAdmin) => {
     );
 };
 
+app.post("/api/auth/register", async(req, res) => {
+    console.log("Incoming request body:", req.body); // Debugging line
+
+    const { firstname, email, phone, password } = req.body;
+
+    if (!firstname || !email || !phone || !password) {
+        return res.status(400).json({ message: "All fields are required!" });
+    }
+
+    try {
+        console.log("Checking email existence..."); // Debugging line
+        const userCheck = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+
+        if (userCheck.rows.length > 0) {
+            console.log("Email already exists"); // Debugging line
+            return res.status(400).json({ message: "Email already exists" });
+        }
+
+        console.log("Hashing password..."); // Debugging line
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        console.log("Inserting user into database..."); // Debugging line
+        await db.query(
+            "INSERT INTO users (firstname, email, phonenumber, passwordhash) VALUES ($1, $2, $3, $4)", [firstname, email, phone, hashedPassword]
+        );
+
+        console.log("User registered successfully!"); // Debugging line
+        res.status(201).json({ message: "User registered successfully!" });
+
+    } catch (error) {
+        console.error("Error registering user:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+app.post("/api/auth/login", async(req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // 1️⃣ Check if the user exists in the database
+        const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // 2️⃣ Check if the password is correct
+        const isMatch = await bcrypt.compare(password, user.rows[0].password);
+
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        // 3️⃣ Generate JWT Token
+        const token = jwt.sign({ email: user.rows[0].email, id: user.rows[0].id },
+            process.env.JWT_SECRET, { expiresIn: "1h" }
+        );
+
+        // 4️⃣ Return the token
+        res.json({ message: "Login successful", token });
+
+    } catch (error) {
+        console.error("Error logging in:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 const authenticate = (req, res, next) => {
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ success: false, message: 'Access denied' });
@@ -51,38 +117,26 @@ const db = new pg.Client({
 });
 db.connect();
 
-app.post("/api/auth/login", async(req, res, next) => {
+app.post("/api/auth/login", async(req, res) => {
+    const { email, password } = req.body;
+
     try {
-        const { username: email, password } = req.body;
-        const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-
-        if (result.rows.length === 0) {
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        const user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
         }
 
-        const user = result.rows[0];
-        // Add password verification
-        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-        if (!isPasswordValid) {
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        const isMatch = await bcrypt.compare(password, user.rows[0].password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid credentials" });
         }
 
-        const token = generateToken(user.id, user.is_admin);
-        res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                is_admin: user.is_admin
-                    // Don't send sensitive data like password_hash!
-            }
-        });
+        const token = jwt.sign({ email: user.rows[0].email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        res.json({ message: "Login successful", token });
     } catch (error) {
-        next(error);
+        console.error("Error logging in:", error);
+        res.status(500).json({ message: "Server error" });
     }
 });
 
@@ -90,17 +144,54 @@ app.post("/api/auth/login", async(req, res, next) => {
 // Get All Accounts
 app.get('/api/accounts', authenticate, async(req, res) => {
     try {
-        const result = await db.query('SELECT id, account_number, account_type, balance, status, created_at FROM accounts WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
+        const result = await db.query('SELECT id, accountnumber, account_type, balance, status, created_at FROM accounts WHERE userid = $1 ORDER BY created_at DESC', [req.user.id]);
         res.status(200).json({ accounts: result.rows });
     } catch (error) {
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+app.get("/dashboard/:userId", async(req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // Get user account details
+        const accountQuery = `
+            SELECT id, accountNumber, balance FROM Account WHERE userId = $1 LIMIT 1;
+        `;
+        const accountResult = await db.query(accountQuery, [userId]);
+
+        if (accountResult.rows.length === 0) {
+            return res.status(404).json({ message: "Account not found" });
+        }
+
+        const account = accountResult.rows[0];
+
+        // Get transactions
+        const transactionsQuery = `
+            SELECT senderAccountId, receiverAccountId, amount, transactionType, description, createdAt
+            FROM Transaction 
+            WHERE senderAccountId = $1 OR receiverAccountId = $1
+            ORDER BY createdAt DESC
+            LIMIT 5;
+        `;
+        const transactionsResult = await db.query(transactionsQuery, [account.id]);
+
+        res.json({
+            accountNumber: account.accountnumber,
+            balance: account.balance,
+            transactions: transactionsResult.rows,
+        });
+    } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 // Get Account by ID
 app.get('/api/accounts/:id', authenticate, async(req, res) => {
     try {
-        const result = await db.query('SELECT id, account_number, account_type, balance, status, created_at FROM accounts WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+        const result = await db.query('SELECT id, accountnumber, account_type, balance, status, created_at FROM accounts WHERE id = $1 AND userid = $2', [req.params.id, req.user.id]);
         if (result.rows.length === 0) return res.status(404).json({ error: 'Account not found' });
         res.status(200).json(result.rows[0]);
     } catch (error) {
@@ -181,7 +272,7 @@ app.get("/api/cards/:userId", authenticate, async(req, res) => {
         const userId = req.user.id;
 
         // Fetch the user's cards
-        const cards = await db.query("SELECT * FROM cards WHERE user_id = $1", [userId]);
+        const cards = await db.query("SELECT * FROM cards WHERE userid = $1", [userId]);
 
         res.status(200).json(cards.rows);
     } catch (error) {
@@ -197,7 +288,7 @@ app.put('/api/cards/:cardId/status', authenticate, async(req, res) => {
     if (!['active', 'inactive'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
     try {
-        const result = await db.query('UPDATE cards SET status = $1 WHERE id = $2 AND user_id = $3 RETURNING *', [status, req.params.cardId, req.user.id]);
+        const result = await db.query('UPDATE cards SET status = $1 WHERE id = $2 AND userid = $3 RETURNING *', [status, req.params.cardId, req.user.id]);
         if (result.rowCount === 0) return res.status(404).json({ error: 'Card not found' });
         res.status(200).json({ message: `Card ${status} successfully` });
     } catch (error) {
@@ -278,7 +369,7 @@ app.put('/api/user/profile', authenticate, async(req, res) => {
 
 app.get('/api/user/notifications', authenticate, async(req, res) => {
     try {
-        const result = await db.query('SELECT id, title, message, type, created_at, is_read FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20', [req.user.id]);
+        const result = await db.query('SELECT id, title, message, type, created_at, is_read FROM notifications WHERE userid = $1 ORDER BY created_at DESC LIMIT 20', [req.user.id]);
         res.status(200).json({ notifications: result.rows });
     } catch (error) {
         res.status(500).json({ error: 'Server error' });
@@ -369,7 +460,7 @@ app.post('/api/accounts/transfer', authenticate, validateTransfer, async(req, re
 
         // Check sender's balance and ownership
         const sender = await db.query(
-            'SELECT balance FROM accounts WHERE id = $1 AND user_id = $2 FOR UPDATE', [fromAccount, req.user.id]
+            'SELECT balance FROM accounts WHERE id = $1 AND userid = $2 FOR UPDATE', [fromAccount, req.user.id]
         );
 
         if (sender.rows.length === 0) {
