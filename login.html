@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+</head>
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+    * {
+        box-sizing: border-box;
+    }
+    
+    .navbar {
+        position: fixed;
+        /* Fix the navbar at the top */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        /* Adjust if needed */
+        background-color: #78c2ff;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 2% 5%;
+    }
+    
+    .logo {
+        width: 5%;
+        height: 5vh;
+        background-color: white;
+        border-radius: 50%;
+    }
+    
+    .nav-link {
+        list-style: none;
+        display: flex;
+        gap: 2rem;
+        margin-right: 10%;
+        padding: 0;
+    }
+    
+    .nav-link li a {
+        text-decoration: none;
+        color: white;
+        font-size: 1.1vw;
+        transition: color 0.3s ease;
+        white-space: nowrap;
+        font-family: 'Inria Serif', sans-serif;
+    }
+    
+    .nav-link li a:hover {
+        color: #5FA8F2;
+    }
+    
+    .auth {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .auth a {
+        text-decoration: none;
+        color: white;
+        font-size: 1.1vw;
+        padding: 8px 16px;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+    }
+    
+    .auth .login {
+        border: 1px solid white;
+    }
+    
+    .auth .Signup {
+        background: #5FA8F2;
+        color: black;
+    }
+    
+    .auth .Signup:hover {
+        background: #3e7dc1;
+    }
+    
+    .auth .login:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    body {
+        background: #f6f5f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        font-family: 'Montserrat', sans-serif;
+        height: 100vh;
+        margin: -20px 0 50px;
+        position: relative;
+        padding-top: 130px;
+        /* Push content down */
+    }
+    
+    h1 {
+        font-weight: bold;
+        margin: 0;
+    }
+    
+    h2 {
+        text-align: center;
+    }
+    
+    p {
+        font-size: 14px;
+        font-weight: 100;
+        line-height: 20px;
+        letter-spacing: 0.5px;
+        margin: 20px 0 30px;
+    }
+    
+    span {
+        font-size: 12px;
+    }
+    
+    a {
+        color: #333;
+        font-size: 14px;
+        text-decoration: none;
+        margin: 15px 0;
+    }
+    
+    button {
+        border-radius: 20px;
+        border: 1px solid #0d1368;
+        background-color: #78c2ff;
+        color: #FFFFFF;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 12px 45px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: transform 80ms ease-in;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+    
+    button:active {
+        transform: scale(0.95);
+    }
+    
+    button:focus {
+        outline: none;
+    }
+    
+    button.ghost {
+        background-color: transparent;
+        border-color: #FFFFFF;
+    }
+    
+    form {
+        background-color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 50px;
+        height: 100%;
+        text-align: center;
+        overflow-y: auto;
+    }
+    
+    input,
+    select {
+        background-color: #eee;
+        border: none;
+        padding: 12px 15px;
+        margin: 8px 0;
+        width: 100%;
+    }
+    
+    .container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+        position: relative;
+        overflow: hidden;
+        width: 768px;
+        max-width: 100%;
+        min-height: 480px;
+        transition: all 0.5s ease;
+        margin-top: 150px;
+    }
+    
+    .container.step2-active {
+        width: 500px;
+        min-height: 650px;
+        padding: 20px;
+        /* Increased height for step 2 */
+    }
+    
+    .form-container {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        transition: all 0.6s ease-in-out;
+    }
+    
+    .sign-in-container {
+        left: 0;
+        width: 50%;
+        z-index: 2;
+    }
+    
+    .container.right-panel-active .sign-in-container {
+        transform: translateX(100%);
+    }
+    
+    .container.right-panel-active.step2-active .sign-in-container {
+        display: none;
+    }
+    
+    .sign-up-container {
+        left: 0;
+        width: 50%;
+        opacity: 0;
+        z-index: 1;
+    }
+    
+    .container.right-panel-active .sign-up-container {
+        transform: translateX(100%);
+        opacity: 1;
+        z-index: 5;
+        animation: show 0.6s;
+    }
+    
+    .container.right-panel-active.step2-active .sign-up-container {
+        width: 100%;
+        transform: translateX(0);
+    }
+    
+    .sign-up-step {
+        display: none;
+        width: 100%;
+    }
+    
+    .sign-up-step.active {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        padding: 20px;
+    }
+    
+    @keyframes show {
+        0%,
+        49.99% {
+            opacity: 0;
+            z-index: 1;
+        }
+        50%,
+        100% {
+            opacity: 1;
+            z-index: 5;
+        }
+    }
+    
+    .overlay-container {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        transition: transform 0.6s ease-in-out;
+        z-index: 100;
+    }
+    
+    .container.right-panel-active .overlay-container {
+        transform: translateX(-100%);
+    }
+    
+    .container.right-panel-active.step2-active .overlay-container {
+        display: none;
+    }
+    
+    .overlay {
+        background: #78c2ff;
+        background: -webkit-linear-gradient(to right, #78c2ff, #78c2ff);
+        background: linear-gradient(to right, #78c2ff, #78c2ff);
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: 0 0;
+        color: #FFFFFF;
+        position: relative;
+        left: -100%;
+        height: 100%;
+        width: 200%;
+        transform: translateX(0);
+        transition: transform 0.6s ease-in-out;
+    }
+    
+    .container.right-panel-active .overlay {
+        transform: translateX(50%);
+    }
+    
+    .overlay-panel {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 40px;
+        text-align: center;
+        top: 0;
+        height: 100%;
+        width: 50%;
+        transform: translateX(0);
+        transition: transform 0.6s ease-in-out;
+    }
+    
+    .overlay-left {
+        transform: translateX(-20%);
+    }
+    
+    .container.right-panel-active .overlay-left {
+        transform: translateX(0);
+    }
+    
+    .overlay-right {
+        right: 0;
+        transform: translateX(0);
+    }
+    
+    .container.right-panel-active .overlay-right {
+        transform: translateX(20%);
+    }
+    
+    .social-container {
+        margin: 20px 0;
+    }
+    
+    .social-container a {
+        border: 1px solid #DDDDDD;
+        border-radius: 50%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 5px;
+        height: 40px;
+        width: 40px;
+    }
+    
+    footer {
+        background-color: #222;
+        color: #fff;
+        font-size: 14px;
+        bottom: 0;
+        position: fixed;
+        left: 0;
+        right: 0;
+        text-align: center;
+        z-index: 999;
+    }
+    
+    footer p {
+        margin: 10px 0;
+    }
+    
+    footer i {
+        color: red;
+    }
+    
+    footer a {
+        color: #3c97bf;
+        text-decoration: none;
+    }
+    
+    .checkbox-container {
+        display: flex;
+        align-items: flex-start;
+        margin: 10px 0;
+        text-align: left;
+    }
+    
+    .checkbox-container input[type="checkbox"] {
+        width: auto;
+        margin-right: 10px;
+        margin-top: 3px;
+    }
+    
+    .step-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 15px;
+    }
+    
+    .step-buttons button {
+        padding: 10px 20px;
+    }
+    
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+    
+    .container-header {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .step-indicator {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #555;
+    }
+    /* Added additional spacing in step 2 */
+    
+    #step2 input,
+    #step2 select {
+        margin: 10px 0;
+    }
+    
+    #step2 .checkbox-container {
+        margin: 15px 0;
+    }
+    
+    #step2 .step-buttons {
+        margin-top: 20px;
+    }
+</style>
+
+<body>
+    <nav class="navbar">
+        <div class="logo"></div>
+        <ul class="nav-link">
+            <li><a href="#">Home</a></li>
+            <li><a href="#Services">Services</a></li>
+            <li><a href="#About Us">About Us</a></li>
+            <li><a href="#">Contact Us</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" id="container">
+        <div class="form-container sign-up-container">
+            <form action="#" id="signUpForm">
+                <!-- Step 1: Basic Information -->
+                <div class="sign-up-step active" id="step1">
+                    <div class="container-header">
+                        <h1>Create Account</h1>
+                        <div class="social-container"></div>
+                        <span>Step 1: Basic Information</span>
+                    </div>
+                    <input type="text" name="firstname" placeholder="Full Name" id="firstname" required />
+                    <input type="email" name="email" placeholder="Email" id="email" required />
+                    <input type="tel" name="phone" placeholder="Phone Number" id="phone" required />
+                    <input type="password" name="password" placeholder="Password" id="password" required />
+                    <input type="password" name="confirmPassword" placeholder="Confirm Password" id="confirmPassword" required />
+                    <div class="error-message" id="passwordError">Passwords do not match</div>
+                    <div class="step-buttons">
+                        <div></div>
+                        <!-- Empty div for spacing -->
+                        <button type="button" id="nextToStep2">Next</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Additional Information -->
+                <div class="sign-up-step" id="step2">
+                    <div class="container-header">
+                        <h1>Complete Profile</h1>
+                        <div class="step-indicator">Step 2 of 2</div>
+                    </div>
+                    <input type="date" placeholder="Birthday" id="birthday" required />
+                    <input type="text" placeholder="Address" id="address" required />
+                    <input type="text" placeholder="ID/Passport Number" id="idNumber" required />
+
+                    <select id="securityQuestion1" required>
+                        <option value="">Select Security Question 1</option>
+                        <option value="q1">What was your first pet's name?</option>
+                        <option value="q2">What was the make of your first car?</option>
+                        <option value="q3">What city were you born in?</option>
+                    </select>
+                    <input type="text" placeholder="Answer to Security Question 1" id="securityAnswer1" required />
+
+                    <select id="securityQuestion2" required>
+                        <option value="">Select Security Question 2</option>
+                        <option value="q4">What is your mother's maiden name?</option>
+                        <option value="q5">What was your childhood nickname?</option>
+                        <option value="q6">What is the name of the street you grew up on?</option>
+                    </select>
+                    <input type="text" placeholder="Answer to Security Question 2" id="securityAnswer2" required />
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="termsConditions" required />
+                        <label for="termsConditions">I agree to the Terms and Conditions and Privacy Policy</label>
+                    </div>
+
+                    <div class="step-buttons">
+                        <button type="button" id="backToStep1" class="ghost">Back</button>
+                        <button type="submit" id="completeSignUp">Sign Up</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+        <div class="form-container sign-in-container">
+            <form id="loginForm">
+                <h1>Sign in</h1>
+                <div class="social-container">
+                </div>
+
+                <span>use your account</span>
+                <input type="email" placeholder="Email" id="loginEmail" />
+                <input type="password" placeholder="Password" id="loginPassword" />
+                <a href="#">Forgot your password?</a>
+                <button type="submit">Sign In</button></form>
+
+        </div>
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>Welcome Back!</h1>
+                    <p>To keep connected with us please login with your personal info</p>
+                    <button class="ghost" id="signIn">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>Hello, Friend!</h1>
+                    <p>Enter your personal details and start journey with us</p>
+                    <button id="signUp" type="submit">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const signUpButton = document.getElementById('signUp');
+        const signInButton = document.getElementById('signIn');
+        const container = document.getElementById('container');
+        const nextToStep2Button = document.getElementById('nextToStep2');
+        const backToStep1Button = document.getElementById('backToStep1');
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const passwordError = document.getElementById('passwordError');
+        const signUpForm = document.getElementById('signUpForm');
+
+        signUpButton.addEventListener('click', () => {
+            container.classList.add("right-panel-active");
+        });
+
+        signInButton.addEventListener('click', () => {
+            container.classList.remove("right-panel-active");
+            container.classList.remove("step2-active");
+            // Reset to step 1 if switching to sign in
+            step2.classList.remove('active');
+            step1.classList.add('active');
+        });
+
+        // Handle step navigation
+        nextToStep2Button.addEventListener('click', () => {
+            // Check if passwords match
+            if (password.value !== confirmPassword.value) {
+                passwordError.style.display = 'block';
+                return;
+            }
+            passwordError.style.display = 'none';
+
+            // Check if required fields in step 1 are filled
+            const step1Fields = step1.querySelectorAll('input[required]');
+            let allFilled = true;
+
+            step1Fields.forEach(field => {
+                if (!field.value) {
+                    allFilled = false;
+                    field.style.borderColor = 'red';
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+
+            if (allFilled) {
+                step1.classList.remove('active');
+                step2.classList.add('active');
+                container.classList.add("step2-active");
+
+                // Scroll to top of container when switching to step 2
+                const formContainer = document.querySelector('.sign-up-container');
+                if (formContainer) {
+                    formContainer.scrollTop = 0;
+                }
+            }
+        });
+
+        backToStep1Button.addEventListener('click', () => {
+            step2.classList.remove('active');
+            step1.classList.add('active');
+            container.classList.remove("step2-active");
+        });
+
+        // Form submission
+        signUpForm.addEventListener('submit', (e) => {
+
+
+
+
+            e.preventDefault();
+            // Here you would typically send the form data to your server
+            alert('Registration successful! You can now sign in.');
+            container.classList.remove("right-panel-active");
+            container.classList.remove("step2-active");
+            signUpForm.reset();
+            step2.classList.remove('active');
+            step1.classList.add('active');
+        });
+
+        // Real-time password validation
+        confirmPassword.addEventListener('input', () => {
+            if (password.value !== confirmPassword.value) {
+                passwordError.style.display = 'block';
+            } else {
+                passwordError.style.display = 'none';
+            }
+        });
+        document.getElementById('loginForm').addEventListener('submit', async(e) => {
+            e.preventDefault();
+
+            const loginData = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Login successful!');
+                    localStorage.setItem('token', data.token); // Save JWT token
+                    window.location.href = 'dashboard.html'; // Redirect to dashboard
+                } else {
+                    alert(data.message || 'Login failed. Check your credentials.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        });
+
+        document.getElementById('signUpForm').addEventListener('submit', async(e) => {
+            e.preventDefault();
+
+            // Get all input values from both steps
+            const userData = {
+                // Step 1 data
+                firstname: document.getElementById('firstname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value,
+
+                // Step 2 data
+                birthday: document.getElementById('birthday').value,
+                address: document.getElementById('address').value,
+                idNumber: document.getElementById('idNumber').value,
+                securityQuestion1: document.getElementById('securityQuestion1').value,
+                securityAnswer1: document.getElementById('securityAnswer1').value,
+                securityQuestion2: document.getElementById('securityQuestion2').value,
+                securityAnswer2: document.getElementById('securityAnswer2').value,
+                termsAccepted: document.getElementById('termsConditions').checked
+            };
+
+            // Validate passwords match
+            if (userData.password !== confirmPassword.value) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            try {
+                // Send request to register API
+                const response = await fetch('http://localhost:3000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Registration successful! You can now log in.');
+                    document.getElementById('signUpForm').reset(); // Clear the form
+
+                    // Reset UI state
+                    container.classList.remove("right-panel-active");
+                    container.classList.remove("step2-active");
+                    step2.classList.remove('active');
+                    step1.classList.add('active');
+
+                    // Switch to login view
+                    document.getElementById('signIn').click();
+                } else {
+                    alert(data.message || 'Registration failed.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        });
+    </script>
+</body>
+
+</html>
