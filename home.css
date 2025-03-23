@@ -319,7 +319,7 @@ font-family:'Hind Siliguri';
     border-radius: 1vw;
 }
 footer {
-    background: linear-gradient(to right,#00d4ff, #090979, #00d4ff); 
+    background: gray;
     color: white; 
     text-align: center;
     padding: 1,5% 0;
