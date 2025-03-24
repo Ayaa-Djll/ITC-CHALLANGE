@@ -32,7 +32,6 @@ const generateToken = (userId, isAdmin) => {
 };
 
 app.post("/api/auth/register", async(req, res) => {
-    console.log("Incoming request body:", req.body); // Debugging line
 
     const { firstname, email, phone, password } = req.body;
 
@@ -41,23 +40,22 @@ app.post("/api/auth/register", async(req, res) => {
     }
 
     try {
-        console.log("Checking email existence..."); // Debugging line
+       
         const userCheck = await db.query("SELECT * FROM users WHERE email = $1", [email]);
 
         if (userCheck.rows.length > 0) {
-            console.log("Email already exists"); // Debugging line
+          
             return res.status(400).json({ message: "Email already exists" });
         }
 
-        console.log("Hashing password..."); // Debugging line
+     
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        console.log("Inserting user into database..."); // Debugging line
         await db.query(
             "INSERT INTO users (firstname, email, phonenumber, passwordhash) VALUES ($1, $2, $3, $4)", [firstname, email, phone, hashedPassword]
         );
 
-        console.log("User registered successfully!"); // Debugging line
+     
         res.status(201).json({ message: "User registered successfully!" });
 
     } catch (error) {
@@ -70,26 +68,25 @@ app.post("/api/auth/login", async(req, res) => {
     const { email, password } = req.body;
 
     try {
-        // 1️⃣ Check if the user exists in the database
+       
         const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);
 
         if (user.rows.length === 0) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // 2️⃣ Check if the password is correct
+       
         const isMatch = await bcrypt.compare(password, user.rows[0].password);
 
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
-        // 3️⃣ Generate JWT Token
         const token = jwt.sign({ email: user.rows[0].email, id: user.rows[0].id },
             process.env.JWT_SECRET, { expiresIn: "1h" }
         );
 
-        // 4️⃣ Return the token
+    
         res.json({ message: "Login successful", token });
 
     } catch (error) {
@@ -141,7 +138,7 @@ app.post("/api/auth/login", async(req, res) => {
 });
 
 
-// Get All Accounts
+
 app.get('/api/accounts', authenticate, async(req, res) => {
     try {
         const result = await db.query('SELECT id, accountnumber, account_type, balance, status, created_at FROM accounts WHERE userid = $1 ORDER BY created_at DESC', [req.user.id]);
@@ -155,7 +152,7 @@ app.get("/dashboard/:userId", async(req, res) => {
     const { userId } = req.params;
 
     try {
-        // Get user account details
+        
         const accountQuery = `
             SELECT id, accountNumber, balance FROM Account WHERE userId = $1 LIMIT 1;
         `;
@@ -166,8 +163,6 @@ app.get("/dashboard/:userId", async(req, res) => {
         }
 
         const account = accountResult.rows[0];
-
-        // Get transactions
         const transactionsQuery = `
             SELECT senderAccountId, receiverAccountId, amount, transactionType, description, createdAt
             FROM Transaction 
@@ -188,7 +183,6 @@ app.get("/dashboard/:userId", async(req, res) => {
     }
 });
 
-// Get Account by ID
 app.get('/api/accounts/:id', authenticate, async(req, res) => {
     try {
         const result = await db.query('SELECT id, accountnumber, account_type, balance, status, created_at FROM accounts WHERE id = $1 AND userid = $2', [req.params.id, req.user.id]);
@@ -230,10 +224,9 @@ app.get('/api/cards/requests', authenticate, async(req, res) => {
     }
 });
 
-// Add authenticate middleware
+
 app.post("/api/cards/request", authenticate, async(req, res) => {
     try {
-        // Use authenticated user's email instead of request body
         const email = req.user.email;
         const cardType = req.body.cardType;
 
@@ -241,7 +234,6 @@ app.post("/api/cards/request", authenticate, async(req, res) => {
             return res.status(400).json({ error: "Card type is required." });
         }
 
-        // Insert request into the database
         const result = await db.query(
             "INSERT INTO card_requests (email, card_type, status) VALUES ($1, $2, 'pending') RETURNING *", [email, cardType]
         );
@@ -267,11 +259,10 @@ app.delete('/api/cards/requests/:requestId', authenticate, async(req, res) => {
 
 app.get("/api/cards/:userId", authenticate, async(req, res) => {
     try {
-        // Use the authenticated user's ID instead of the parameter
-        // This prevents accessing other users' cards
+        
         const userId = req.user.id;
 
-        // Fetch the user's cards
+     
         const cards = await db.query("SELECT * FROM cards WHERE userid = $1", [userId]);
 
         res.status(200).json(cards.rows);
@@ -298,12 +289,12 @@ app.put('/api/cards/:cardId/status', authenticate, async(req, res) => {
 
 app.get("/api/admin/users", authenticate, async(req, res) => {
     try {
-        // Ensure the user is an admin before proceeding
+        
         if (!req.user.isAdmin) {
             return res.status(403).json({ error: "Access denied. Admins only." });
         }
 
-        // Query the database for all users
+      
         const result = await db.query("SELECT id, name, email, role, status FROM users");
         res.status(200).json(result.rows);
     } catch (error) {
@@ -325,12 +316,12 @@ app.get('/api/admin/cards/pending', authenticate, async(req, res) => {
 app.put("/api/admin/cards/:cardId", authenticate, async(req, res) => {
     try {
         const { cardId } = req.params;
-        const { status } = req.body; // Expected values: "active", "inactive", etc.
+        const { status } = req.body; 
 
         if (!req.user.isAdmin) {
             return res.status(403).json({ error: "Access denied. Admins only." });
         }
-        // Update the card's status in the database
+ 
         const result = await db.query(
             "UPDATE bank_cards SET status = $1 WHERE id = $2 RETURNING *", [status, cardId]
         );
@@ -356,7 +347,6 @@ app.get('/api/user/profile', authenticate, async(req, res) => {
     }
 });
 
-// Update User Profile
 app.put('/api/user/profile', authenticate, async(req, res) => {
     try {
         const { phone, address } = req.body;
@@ -377,8 +367,6 @@ app.get('/api/user/notifications', authenticate, async(req, res) => {
 });
 
 
-
-// Change Password
 app.post('/api/auth/change-password', async(req, res, next) => {
     try {
         const { email, currentPassword, newPassword } = req.body;
@@ -400,7 +388,6 @@ app.post('/api/auth/change-password', async(req, res, next) => {
     }
 });
 
-// Forgot Password
 app.post('/api/auth/forgot-password', async(req, res, next) => {
     try {
         const { email } = req.body;
@@ -414,7 +401,6 @@ app.post('/api/auth/forgot-password', async(req, res, next) => {
     }
 });
 
-// Reset Password
 app.post('/api/auth/reset-password', async(req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -431,9 +417,6 @@ app.post('/api/auth/reset-password', async(req, res, next) => {
     }
 });
 
-
-
-// Add at the top of your file
 const validateTransfer = (req, res, next) => {
     const { fromAccount, toAccount, amount } = req.body;
 
@@ -452,13 +435,11 @@ const validateTransfer = (req, res, next) => {
     next();
 };
 
-// Then use it in your route
 app.post('/api/accounts/transfer', authenticate, validateTransfer, async(req, res) => {
     const { fromAccount, toAccount, amount } = req.body;
     try {
         await db.query('BEGIN');
 
-        // Check sender's balance and ownership
         const sender = await db.query(
             'SELECT balance FROM accounts WHERE id = $1 AND userid = $2 FOR UPDATE', [fromAccount, req.user.id]
         );
@@ -473,10 +454,8 @@ app.post('/api/accounts/transfer', authenticate, validateTransfer, async(req, re
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
-        // Deduct from sender
         await db.query('UPDATE accounts SET balance = balance - $1 WHERE id = $2', [amount, fromAccount]);
 
-        // Add to recipient
         const recipient = await db.query(
             'UPDATE accounts SET balance = balance + $1 WHERE id = $2 RETURNING id', [amount, toAccount]
         );
@@ -486,7 +465,6 @@ app.post('/api/accounts/transfer', authenticate, validateTransfer, async(req, re
             return res.status(404).json({ error: 'Recipient account not found' });
         }
 
-        // Log transaction
         await db.query(
             'INSERT INTO transactions (sender_account_id, receiver_account_id, amount, transaction_type, status) VALUES ($1, $2, $3, $4, $5) RETURNING id', [fromAccount, toAccount, amount, 'transfer', 'completed']
         );
